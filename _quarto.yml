@@ -6,7 +6,7 @@ website:
   title: "KNN Tutorial"
   navbar:
     left:
-      - index.ipynb
+      - index.qmd
     right:
       - about.qmd
       - icon: github

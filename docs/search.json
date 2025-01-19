@@ -7,6 +7,69 @@
     "text": "About this blog"
   },
   {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "",
+    "text": "Machine learning is a powerful tool that helps us make predictions and classify data. In this notebook, we will guide you step-by-step to build a k-Nearest Neighbors (KNN) model using Python and scikit-learn. We will use the Wine dataset, a simple yet versatile dataset, to illustrate how KNN works.\nBy the end of this tutorial, you will: - Understand the basics of KNN - Learn how to preprocess data for KNN - Build and evaluate a KNN classifier using scikit-learn - Find the best value for the number of neighbors (‘k’)\nimport numpy as np\nimport matplotlib.pyplot as plt\nimport pandas as pd\nfrom sklearn.datasets import load_wine\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.neighbors import KNeighborsClassifier\nfrom sklearn.model_selection import cross_val_score\nfrom sklearn.metrics import accuracy_score, confusion_matrix, classification_report\nfrom sklearn.decomposition import PCA"
+  },
+  {
+    "objectID": "posts/welcome/index.html#step-0-what-is-knn",
+    "href": "posts/welcome/index.html#step-0-what-is-knn",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Step 0: What is KNN?",
+    "text": "Step 0: What is KNN?\nKNN (k-Nearest Neighbors) is a fundamental supervised machine learning algorithm used for both classification and regression tasks.\nCore Concepts:\n\nBasic Principle:\n\nFor a new data point x, find k closest training samples in the feature space\nFor classification: Take majority vote of the k neighbors\nFor regression: Take average of the k neighbors\n\nDistance Metrics: The most commonly used distance metric is Euclidean distance: \\(d(x, y) = \\sqrt{\\sum_{i=1}^{n} (x_i - y_i)^2}\\)\nAlgorithm Steps: The algorithm stores all training data points and for each new data point:\n\nCalculates distance to all training points\nFinds k nearest neighbors\nTakes majority vote (classification) or average (regression)\nAssigns the result to the new point\n\n\nAdvantages and Disadvantages:\nKNN is simple to understand, requires no training period, and handles multi-class problems well. It works effectively with both linear and non-linear data. However, it can be computationally expensive for large datasets and is sensitive to irrelevant features and outliers. The algorithm requires feature scaling and can be memory-intensive. It also suffers from the curse of dimensionality, where performance degrades with high-dimensional data.\n\n# data points\nclass_a = np.array([[1, 1], [1.5, 2], [2, 1]])\nclass_b = np.array([[4, 4], [4, 5], [5, 4]])\nnew_point = np.array([2.5, 3])\n\n# Create the plot\nplt.figure(figsize=(6, 4))\nplt.scatter(class_a[:, 0], class_a[:, 1], c='blue', marker='o', s=100, label='Class A')\nplt.scatter(class_b[:, 0], class_b[:, 1], c='red', marker='s', s=100, label='Class B')\nplt.scatter(new_point[0], new_point[1], c='yellow', marker='*', s=200, label='New Point')\n\n# Circle for k=3 nearest neighbors\ndistances = np.sqrt(np.sum((np.vstack([class_a, class_b]) - new_point)**2, axis=1))\nk = 3\nradius = sorted(distances)[k-1]\ncircle = plt.Circle((new_point[0], new_point[1]), radius, fill=False, linestyle='--', color='gray')\nplt.gca().add_artist(circle)\n\nplt.title('Simple KNN Example (k=3)')\nplt.xlabel('X')\nplt.ylabel('Y')\nplt.legend()\nplt.grid(True)\nplt.axis('equal')\nplt.show()\n\n\n\n\n\n\n\n\nIn this example, we have two clearly separated classes: - Class A (blue circles): 3 points in the bottom-left - Class B (red squares): 3 points in the top-right\nThe yellow star represents a new point we want to classify. The dashed circle shows the boundary of the 3 nearest neighbors\nLooking at the points inside the circle, we can see that more points belong to Class A. Therefore, the new point would be classified as Class A\nThis simple example shows how KNN makes decisions based on the majority class among the nearest neighbors"
+  },
+  {
+    "objectID": "posts/welcome/index.html#step-1-load-and-explore-the-dataset",
+    "href": "posts/welcome/index.html#step-1-load-and-explore-the-dataset",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Step 1: Load and Explore the Dataset",
+    "text": "Step 1: Load and Explore the Dataset\nThe Wine dataset is a classic machine learning dataset containing chemical analysis results of wines from Italy. Each sample represents a wine with: - Features: 13 chemical measurements (alcohol content, malic acid, etc.) - Classes: 3 different wine varieties - Size: 178 samples\n\n# Load the Wine dataset\nwine = load_wine()\nX = wine.data  # Features\ny = wine.target  # Labels\n\n\n# Convert to DataFrame for easier exploration\nwine_df = pd.DataFrame(X, columns=wine.feature_names)\nwine_df['target'] = y\n\n# Display the first few rows\nprint(wine_df.shape)\nwine_df.head()\n\n(178, 14)\n\n\n\n\n\n\n\n\n\nalcohol\nmalic_acid\nash\nalcalinity_of_ash\nmagnesium\ntotal_phenols\nflavanoids\nnonflavanoid_phenols\nproanthocyanins\ncolor_intensity\nhue\nod280/od315_of_diluted_wines\nproline\ntarget\n\n\n\n\n0\n14.23\n1.71\n2.43\n15.6\n127.0\n2.80\n3.06\n0.28\n2.29\n5.64\n1.04\n3.92\n1065.0\n0\n\n\n1\n13.20\n1.78\n2.14\n11.2\n100.0\n2.65\n2.76\n0.26\n1.28\n4.38\n1.05\n3.40\n1050.0\n0\n\n\n2\n13.16\n2.36\n2.67\n18.6\n101.0\n2.80\n3.24\n0.30\n2.81\n5.68\n1.03\n3.17\n1185.0\n0\n\n\n3\n14.37\n1.95\n2.50\n16.8\n113.0\n3.85\n3.49\n0.24\n2.18\n7.80\n0.86\n3.45\n1480.0\n0\n\n\n4\n13.24\n2.59\n2.87\n21.0\n118.0\n2.80\n2.69\n0.39\n1.82\n4.32\n1.04\n2.93\n735.0\n0\n\n\n\n\n\n\n\n\n# Check dataset distribution\nprint(wine_df['target'].value_counts())\n\ntarget\n1    71\n0    59\n2    48\nName: count, dtype: int64"
+  },
+  {
+    "objectID": "posts/welcome/index.html#step-2-preprocess-the-data",
+    "href": "posts/welcome/index.html#step-2-preprocess-the-data",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Step 2: Preprocess the Data",
+    "text": "Step 2: Preprocess the Data\nPreprocessing is crucial for KNN because the algorithm relies on distance calculations. Features with different scales can skew the results.\n\n# Split the dataset\nX_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\n# Scale the features\nscaler = StandardScaler()\nX_train = scaler.fit_transform(X_train)\nX_test = scaler.transform(X_test)"
+  },
+  {
+    "objectID": "posts/welcome/index.html#step-3-build-and-train-the-knn-model",
+    "href": "posts/welcome/index.html#step-3-build-and-train-the-knn-model",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Step 3: Build and Train the KNN Model",
+    "text": "Step 3: Build and Train the KNN Model\nNow, we’ll create a KNN classifier and train it on the training data.\n\n# Create the KNN model\nk = 3  # Set a initial value of k\nknn = KNeighborsClassifier(n_neighbors=k)\n\n# Train the model\nknn.fit(X_train, y_train)\n\nKNeighborsClassifier(n_neighbors=3)In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.KNeighborsClassifier?Documentation for KNeighborsClassifieriFittedKNeighborsClassifier(n_neighbors=3)"
+  },
+  {
+    "objectID": "posts/welcome/index.html#step-4-find-the-best-value-for-k",
+    "href": "posts/welcome/index.html#step-4-find-the-best-value-for-k",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Step 4: Find the Best Value for ‘k’",
+    "text": "Step 4: Find the Best Value for ‘k’\nThe choice of ‘k’ can significantly impact the model’s performance. We will use cross-validation to determine the optimal value for ‘k’.\n\n# Test different values of k\nk_values = range(1, 20)\nk_scores = []\n\nfor k in k_values:\n    knn = KNeighborsClassifier(n_neighbors=k)\n    scores = cross_val_score(knn, X_train, y_train, cv=5, scoring='accuracy')\n    k_scores.append(scores.mean())\n\n# Plot cross-validation results\nplt.plot(k_values, k_scores, marker='o')\nplt.title('Cross-Validation Results')\nplt.xlabel('Number of Neighbors (k)')\nplt.ylabel('Accuracy')\nplt.xticks(k_values)\nplt.grid(True)\nplt.show()\n\n# Find the best k\nbest_k = k_values[np.argmax(k_scores)]\nprint(f\"The best value of k is {best_k} with an accuracy of {max(k_scores):.2f}\")\n\n\n\n\n\n\n\n\nThe best value of k is 13 with an accuracy of 0.96"
+  },
+  {
+    "objectID": "posts/welcome/index.html#step-5-evaluate-the-model",
+    "href": "posts/welcome/index.html#step-5-evaluate-the-model",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Step 5: Evaluate the Model",
+    "text": "Step 5: Evaluate the Model\nAfter determining the best k, re-train the model and evaluate its performance on the test set.\n\n# Re-train with the best k we found\nknn = KNeighborsClassifier(n_neighbors=best_k)\nknn.fit(X_train, y_train)\n\ny_pred = knn.predict(X_test)\n\n# Evaluate the model\nprint(\"Accuracy:\", accuracy_score(y_test, y_pred))\n\nAccuracy: 0.9722222222222222\n\n\n\n# show confusion matrix\nprint(\"Confusion Matrix:\")\nconfusion_matrix(y_test, y_pred)\n\nConfusion Matrix:\n\n\narray([[14,  0,  0],\n       [ 1, 13,  0],\n       [ 0,  0,  8]])\n\n\n\n# show classification report\nprint(\"Classification Report:\\n\", classification_report(y_test, y_pred))\n\nClassification Report:\n               precision    recall  f1-score   support\n\n           0       0.93      1.00      0.97        14\n           1       1.00      0.93      0.96        14\n           2       1.00      1.00      1.00         8\n\n    accuracy                           0.97        36\n   macro avg       0.98      0.98      0.98        36\nweighted avg       0.97      0.97      0.97        36\n\n\n\nAs we can see the results shown above: the KNN model achieved 97% accuracy on the Wine dataset classification task.\nFrom the confusion matrix and classification report, we can see the model made 35 correct predictions out of 36 test samples: - For Class 0: correctly predicted all 14 samples - For Class 1: correctly predicted 13 samples, with 1 sample misclassified as Class 0 - For Class 2: correctly predicted all 8 samples"
+  },
+  {
+    "objectID": "posts/welcome/index.html#step-6-visualize-the-results",
+    "href": "posts/welcome/index.html#step-6-visualize-the-results",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Step 6: Visualize the Results",
+    "text": "Step 6: Visualize the Results\nTo better understand the data and model, we can use Principal Component Analysis (PCA) to reduce the data to two dimensions for visualization.\n\n# Visualization\npca = PCA(n_components=2)\nX_train_2D = pca.fit_transform(X_train)\nX_test_2D = pca.transform(X_test)\n\n# Scatter plot of training data\nplt.scatter(X_train_2D[:, 0], X_train_2D[:, 1], c=y_train, cmap='viridis', edgecolor='k', s=50)\nplt.title('Training Data Visualization')\nplt.xlabel('Principal Component 1')\nplt.ylabel('Principal Component 2')\nplt.colorbar(label='Class')\nplt.show()"
+  },
+  {
+    "objectID": "posts/welcome/index.html#conclusion",
+    "href": "posts/welcome/index.html#conclusion",
+    "title": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier",
+    "section": "Conclusion",
+    "text": "Conclusion\nThroughout this tutorial, we’ve explored the k-Nearest Neighbors algorithm and its practical implementation. We started by understanding the fundamental concepts of KNN, then walked through the complete process of building a classifier using the Wine dataset.\nWe learned how to properly preprocess our data, construct the model, and find the optimal number of neighbors through cross-validation.\nOur implementation results with 97% accuracy, demonstrating KNN’s effectiveness for classification tasks. KNN is straightforward to understand and implement, it serves as an excellent introduction to machine learning concepts."
+  },
+  {
     "objectID": "posts/post-with-code/index.html",
     "href": "posts/post-with-code/index.html",
     "title": "Post With Code",
@@ -18,6 +81,6 @@
     "href": "index.html",
     "title": "KNN Tutorial",
     "section": "",
-    "text": "Post With Code\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nJan 18, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\n\n\n\n\n\n\nA Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier\n\n\n\n\n\n\nmachine learning\n\n\ntutorial\n\n\n\n\n\n\n\n\n\nJan 18, 2025\n\n\nAlexandra Zhou\n\n\n\n\n\n\nNo matching items"
+    "text": "A Beginner’s Guide to Building a k-Nearest Neighbors (KNN) Classifier\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nPost With Code\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nJan 18, 2025\n\n\nHarlow Malloc\n\n\n\n\n\n\nNo matching items"
   }
 ]
