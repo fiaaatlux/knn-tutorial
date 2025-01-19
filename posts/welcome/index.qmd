@@ -1,0 +1,14 @@
+---
+title: "A Beginner's Guide to Building a k-Nearest Neighbors (KNN) Classifier"
+author: "Alexandra Zhou"
+date: "2025-01-18"
+categories: [machine learning, tutorial]
+execute:
+  echo: true
+  warning: false
+format:
+  html:
+    code-fold: true
+    code-tools: true
+    code-link: true
+---
