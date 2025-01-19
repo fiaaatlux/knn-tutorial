@@ -7,9 +7,13 @@ jupyter: python3
 Machine learning is a powerful tool that helps us make predictions and classify data. In this notebook, we will guide you step-by-step to build a k-Nearest Neighbors (KNN) model using Python and scikit-learn. We will use the Wine dataset, a simple yet versatile dataset, to illustrate how KNN works.
 
 By the end of this tutorial, you will:
+
 - Understand the basics of KNN
+  
 - Learn how to preprocess data for KNN
+  
 - Build and evaluate a KNN classifier using scikit-learn
+  
 - Find the best value for the number of neighbors (‘k’)
 
 
@@ -81,7 +85,9 @@ plt.show()
 ```
 
 In this example, we have two clearly separated classes:
+
    - Class A (blue circles): 3 points in the bottom-left
+  
    - Class B (red squares): 3 points in the top-right
 
 The yellow star represents a new point we want to classify. The dashed circle shows the boundary of the 3 nearest neighbors
@@ -94,8 +100,11 @@ This simple example shows how KNN makes decisions based on the majority class am
 ## Step 1: Load and Explore the Dataset
 
 The Wine dataset is a classic machine learning dataset containing chemical analysis results of wines from Italy. Each sample represents a wine with:
+
 - Features: 13 chemical measurements (alcohol content, malic acid, etc.)
+  
 - Classes: 3 different wine varieties
+  
 - Size: 178 samples
 
 ```{python}
